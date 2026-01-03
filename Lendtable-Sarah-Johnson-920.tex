@@ -1,0 +1,162 @@
+\documentclass[10pt, letterpaper]{article}
+
+% ---------- Fonts & layout ----------
+\usepackage[margin=1in]{geometry}
+\usepackage{fontspec}
+\usepackage{setspace}
+\usepackage{parskip}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{tabularx}
+\usepackage{hyperref}
+
+% Set SourceSans3 as the main font
+\setmainfont{SourceSans3}[
+  Path = ./sourceSans/,
+  Extension = .ttf,
+  UprightFont = *-Regular,
+  BoldFont = *-Bold,
+  ItalicFont = *-Italic,
+  BoldItalicFont = *-BoldItalic
+]
+
+% ---------- Colors ----------
+\definecolor{Primary}{RGB}{23,43,77}
+\definecolor{RuleGray}{gray}{0.25}
+\definecolor{lightblue}{RGB}{10, 132, 255}
+
+% ---------- PDF meta ----------
+\hypersetup {
+  pdftitle={Resume - Sarah Johnson},
+  pdfauthor={Sarah Johnson},
+  colorlinks=true,
+  linkcolor=lightblue,
+  urlcolor=lightblue,
+  citecolor=lightblue
+}
+
+% ---------- Section styling ----------
+\makeatletter
+\renewcommand{\section}{%
+  \@startsection{section}{1}{\z@}{10pt}{6pt}{%
+    \Large\bfseries\color{black}%
+  }%
+}
+\renewcommand{\@seccntformat}[1]{}
+\def\@sect#1#2#3#4#5#6[#7]#8{%
+  \ifnum #2>\c@secnumdepth
+    \let\@svsec\@empty
+  \else
+    \refstepcounter{#1}%
+    \let\@svsec\@empty
+  \fi
+  \begingroup
+    #6{%
+      \MakeUppercase{#8}\\[-4pt]%
+      \textcolor{RuleGray}{\rule{\linewidth}{0.5pt}}%
+    }%
+  \endgroup
+  \@xsect{#5}%
+}
+\makeatother
+
+% ---------- Lists ----------
+\setlength{\leftmargini}{0pt}
+\setlength{\itemindent}{0pt}
+\setlength{\itemsep}{3pt}
+\setlength{\topsep}{0pt}
+\setlength{\partopsep}{0pt}
+\setlength{\parsep}{0pt}
+
+% ---------- Small helpers ----------
+\newcommand{\bull}{\kern0.45em\textbullet\kern0.45em}
+\newcommand{\role}[1]{\textbf{#1}}
+\newcommand{\org}[1]{\textbf{#1}}
+\newcommand{\place}[1]{\textit{#1}}
+\newcommand{\blackLink}[2]{\href{#1}{\textcolor{black}{#2}}}
+\newcommand{\blueLink}[2]{\href{#1}{\textcolor{lightblue}{#2}}}
+\newcommand{\placeholder}[1]{\lbrack #1\rbrack}
+
+% ---------- Header ----------
+\makeatletter
+\renewcommand{\maketitle}{
+  \begin{center}
+    {\huge\bfseries Sarah Johnson}\par\vspace{6pt}
+    {\color{Primary}
+      Austin, Texas, USA \bull
+      \blackLink{mailto:sarah.johnson@email.com}{sarah.johnson@email.com} \bull
+      +1-555-987-6543 \bull
+      \blackLink{https://linkedin.com/in/sarahjohnson}{linkedin.com/in/sarahjohnson} \bull
+      \blackLink{https://github.com/sarahjohnson}{github.com/sarahjohnson}
+    }
+  \end{center}
+  \vspace{-8pt}
+}
+\makeatother
+
+% ---------- Page Style ----------
+\pagestyle{empty}
+
+\begin{document}
+
+\maketitle
+\vspace{15pt}
+
+% ---------- SUMMARY ----------
+\section{Summary}
+Innovative engineering leader with 6+ years of experience building and scaling backend systems, integrating AI solutions, and driving technical strategy in fast-paced environments. Proven record of setting product direction, leading cross-functional teams, and architecting infrastructure for high-growth businesses. Adept at partnering with founders, developing AI-powered features, and delivering robust, scalable applications in payments and developer tooling.
+
+% ---------- EXPERIENCE ----------
+\section{Experience}
+
+\role{Senior Product Manager / Technical Lead} \hfill 03/2021 -- Present \\
+\org{Microsoft} \bull \href{https://microsoft.com}{microsoft.com} \hfill \place{Redmond, WA}
+\begin{itemize}
+  \item Defined and set technical strategy for Azure DevOps, leading a cross-functional squad of 12 in designing and delivering scalable, cloud-based solutions serving enterprise clients.
+  \item Architected and integrated AI-driven analytics features leveraging Azure Cognitive Services and ML models, boosting product adoption by 35\%.
+  \item Built robust APIs and developer tooling, enabling seamless integration with third-party platforms and payment providers.
+  \item Championed infrastructure modernization, introducing microservices architecture and automated CI/CD pipelines to accelerate delivery and improve system reliability.
+  \item Partnered with founders and product leadership to shape roadmap, established engineering best practices, and presented technical solutions on high-stakes calls with clients.
+  \item Drove adoption of agile methodologies and introduced the OKR framework, improving team alignment by 50\% and accelerating feature delivery.
+\end{itemize}
+\vspace{12pt}
+
+\role{Product Manager / Backend Engineer} \hfill 06/2018 -- 02/2021 \\
+\org{Amazon} \bull \href{https://amazon.com}{amazon.com} \hfill \place{Seattle, WA}
+\begin{itemize}
+  \item Led backend engineering and product lifecycle for seller payment and analytics tools used by 100K+ merchants, increasing user satisfaction from 3.2 to 4.5 stars.
+  \item Collaborated with engineering teams to launch real-time payment reconciliation, fraud detection modules, and AI-powered transaction insights.
+  \item Designed and implemented high-availability APIs and event-driven infrastructure supporting secure, scalable payment integrations.
+  \item Drove UX optimization and API documentation improvements, reducing support tickets by 25\% and enhancing onboarding for developer partners.
+  \item Represented the engineering team in client demos and sales calls, translating technical value into business outcomes for stakeholders.
+\end{itemize}
+\vspace{12pt}
+
+% ---------- DYNAMIC SECTION 1 ----------
+\section{Key Projects}
+\org{AI-Powered Product Prioritization Tool} \bull Internal Platform \hfill \place{Microsoft}
+\begin{itemize}
+  \item Designed and engineered a data-driven prioritization tool leveraging ML algorithms to analyze user engagement metrics and automate product roadmap decisions.
+  \item Adopted by 50+ PMs and engineering leads, accelerating roadmap planning and aligning execution with business goals.
+\end{itemize}
+
+\org{Open Source Product Management Framework} \bull Developer Tooling \bull \href{https://github.com/sarahjohnson/pm-framework}{github.com/sarahjohnson/pm-framework}
+\begin{itemize}
+  \item Created an extensible, API-first framework for efficient product management, achieving over 1,000 GitHub stars and adoption within developer teams globally.
+  \item Integrated AI-powered analytics components and seamless payment provider modules to support SaaS and fintech use cases.
+\end{itemize}
+
+% ---------- DYNAMIC SECTION 2 ----------
+\section{Technical Skills}
+\textbf{Languages:} SQL, Python, JavaScript, TypeScript \\
+\textbf{Backend:} API Design, Microservices, CI/CD, Cloud Infrastructure (Azure, AWS), Payment Integrations, Event-driven Architectures, NoSQL/Data Modeling \\
+\textbf{AI/ML:} Azure Cognitive Services, Analytics Pipelines, A/B Experimentation, Data-driven Feature Development \\
+\textbf{Developer Tools:} Mixpanel, Amplitude, Git, Jira, Figma, Confluence \\
+\textbf{Methodologies:} Agile/Scrum, OKRs, Cross-functional Leadership
+
+% ---------- EDUCATION ----------
+\section{Education}
+\textbf{MBA in Technology Management} \bull Stanford Graduate School of Business \bull Stanford, CA \bull 2018 \bull GPA: 3.9/4.0
+
+\textbf{B.S. in Computer Science} \bull University of Texas at Austin \bull Austin, TX \bull 2016 \bull GPA: 3.7/4.0
+
+\end{document}
