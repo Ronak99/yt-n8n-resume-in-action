@@ -1,0 +1,211 @@
+name: Generate PDF
+
+# n8n will commit a tex file to this repository and this "n8n" branch
+# this workflow will generate a pdf from the tex file
+# and commit the pdf to the "n8n" branch
+# pdf then calls my webhook which will trigger another workflow to send the pdf to the user
+
+on:
+  push:
+    branches:
+      - n8n
+
+jobs:
+  generate-pdf:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install Tectonic
+        run: |
+          curl --proto '=https' --tlsv1.2 -fsSL https://drop-sh.fullyjustified.net | sh
+
+      - name: Find changed .tex file and build PDF
+        id: process_tex
+        run: |
+          set -e  # Exit on error
+          
+          # Get the first .tex file that was changed/added in this commit
+          if [ "${{ github.event.before }}" != "0000000000000000000000000000000000000000" ]; then
+            TEX_FILE=$(git diff --name-only --diff-filter=ACMR ${{ github.event.before }} ${{ github.sha }} | grep '\.tex$' | head -n 1 || true)
+          else
+            # First commit - check all .tex files in HEAD and get the first one
+            TEX_FILE=$(git ls-tree -r --name-only HEAD | grep '\.tex$' | head -n 1 || true)
+          fi
+          
+          if [ -z "$TEX_FILE" ]; then
+            ERROR_MSG="No .tex file found in this commit"
+            echo "ERROR_MSG=${ERROR_MSG}" >> $GITHUB_ENV
+            echo "$ERROR_MSG"
+            exit 1
+          fi
+          
+          if [ ! -f "$TEX_FILE" ]; then
+            ERROR_MSG="Tex file $TEX_FILE not found in repository"
+            echo "ERROR_MSG=${ERROR_MSG}" >> $GITHUB_ENV
+            echo "$ERROR_MSG"
+            exit 1
+          fi
+          
+          echo "Found .tex file: $TEX_FILE"
+          echo "Processing $TEX_FILE..."
+          
+          # Run tectonic and capture errors
+          if ! ./tectonic "$TEX_FILE" 2>&1; then
+            ERROR_MSG="Failed to process $TEX_FILE with tectonic"
+            echo "ERROR_MSG=${ERROR_MSG}" >> $GITHUB_ENV
+            echo "$ERROR_MSG"
+            exit 1
+          fi
+          
+          # Get the PDF filename (replace .tex with .pdf)
+          PDF_FILE="${TEX_FILE%.tex}.pdf"
+          
+          if [ ! -f "$PDF_FILE" ]; then
+            ERROR_MSG="PDF file $PDF_FILE was not created from $TEX_FILE"
+            echo "ERROR_MSG=${ERROR_MSG}" >> $GITHUB_ENV
+            echo "$ERROR_MSG"
+            exit 1
+          fi
+          
+          echo "Successfully generated $PDF_FILE"
+          
+          # Store file names for later steps
+          echo "TEX_FILE=${TEX_FILE}" >> $GITHUB_ENV
+          echo "PDF_FILE=${PDF_FILE}" >> $GITHUB_ENV
+          echo "PDFS_GENERATED=true" >> $GITHUB_ENV
+
+      - name: Commit and push PDF
+        id: commit_push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TEX_FILE: ${{ env.TEX_FILE }}
+          PDF_FILE: ${{ env.PDF_FILE }}
+        run: |
+          set -e  # Exit on error
+          
+          git config --local user.email "punase.ronak99@gmail.com"
+          git config --local user.name "Ronak99"
+          git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
+          
+          if [ -z "$PDF_FILE" ] || [ ! -f "$PDF_FILE" ]; then
+            ERROR_MSG="PDF file $PDF_FILE not found - PDF may not have been generated"
+            echo "ERROR_MSG=${ERROR_MSG}" >> $GITHUB_ENV
+            echo "$ERROR_MSG"
+            exit 1
+          fi
+          
+          # Store PDF in temporary directory
+          mkdir -p /tmp/generated_pdfs
+          cp "$PDF_FILE" "/tmp/generated_pdfs/$(basename "$PDF_FILE")"
+          echo "Stored $PDF_FILE"
+          
+          # Fetch all branches
+          if ! git fetch origin; then
+            ERROR_MSG="Failed to fetch from origin"
+            echo "ERROR_MSG=${ERROR_MSG}" >> $GITHUB_ENV
+            echo "$ERROR_MSG"
+            exit 1
+          fi
+          
+          # Checkout or create the generated branch
+          if git show-ref --verify --quiet refs/remotes/origin/generated; then
+            git checkout -b generated origin/generated 2>/dev/null || git checkout generated
+            if ! git pull --rebase origin generated; then
+              ERROR_MSG="Failed to pull/rebase generated branch"
+              echo "ERROR_MSG=${ERROR_MSG}" >> $GITHUB_ENV
+              echo "$ERROR_MSG"
+              exit 1
+            fi
+          else
+            git checkout -b generated
+          fi
+          
+          # Copy stored PDF to the generated branch
+          PDF_BASENAME=$(basename "$PDF_FILE")
+          if [ -f "/tmp/generated_pdfs/$PDF_BASENAME" ]; then
+            cp "/tmp/generated_pdfs/$PDF_BASENAME" "$PDF_FILE"
+            git add "$PDF_FILE"
+            echo "Added $PDF_FILE to staging"
+          else
+            ERROR_MSG="PDF file /tmp/generated_pdfs/$PDF_BASENAME not found"
+            echo "ERROR_MSG=${ERROR_MSG}" >> $GITHUB_ENV
+            echo "$ERROR_MSG"
+            exit 1
+          fi
+          
+          # Commit if there are changes
+          if ! git diff --staged --quiet; then
+            COMMIT_MSG="Auto-generate PDF from $TEX_FILE [skip ci]"
+            if ! git commit -m "$COMMIT_MSG"; then
+              ERROR_MSG="Failed to commit PDF file"
+              echo "ERROR_MSG=${ERROR_MSG}" >> $GITHUB_ENV
+              echo "$ERROR_MSG"
+              exit 1
+            fi
+            COMMIT_SHA=$(git rev-parse HEAD)
+            if ! git push origin generated; then
+              ERROR_MSG="Failed to push to generated branch"
+              echo "ERROR_MSG=${ERROR_MSG}" >> $GITHUB_ENV
+              echo "$ERROR_MSG"
+              exit 1
+            fi
+            
+            # Store commit SHA for webhook
+            echo "COMMIT_SHA=${COMMIT_SHA}" >> $GITHUB_ENV
+            echo "PDFS_COMMITTED=true" >> $GITHUB_ENV
+          else
+            ERROR_MSG="No PDF file to commit - staging area is empty"
+            echo "ERROR_MSG=${ERROR_MSG}" >> $GITHUB_ENV
+            echo "$ERROR_MSG"
+            exit 1
+          fi
+
+      - name: Trigger webhook for generated PDF
+        if: success() && env.PDFS_COMMITTED == 'true'
+        env:
+          COMMIT_SHA: ${{ env.COMMIT_SHA }}
+          TEX_FILE: ${{ env.TEX_FILE }}
+          PDF_FILE: ${{ env.PDF_FILE }}
+        run: |
+          WEBHOOK_URL="https://aeravath.app.n8n.cloud/webhook-test/789e96c4-9c2e-4f6c-9621-b016295c07ce"
+          
+          if [ -z "$PDF_FILE" ] || [ -z "$TEX_FILE" ]; then
+            echo "ERROR: PDF_FILE or TEX_FILE not set"
+            exit 1
+          fi
+          
+          # Construct GitHub raw URL for the PDF file
+          PDF_URL="https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/generated/${PDF_FILE}"
+          
+          echo "Triggering webhook for $TEX_FILE -> $PDF_FILE"
+          echo "PDF URL: $PDF_URL"
+          
+          # Send webhook with PDF URL and handle errors
+          # Escape JSON special characters in variables
+          PDF_URL_ESC=$(printf '%s' "$PDF_URL" | sed 's/\\/\\\\/g' | sed 's/"/\\"/g')
+          PDF_FILE_ESC=$(printf '%s' "$PDF_FILE" | sed 's/\\/\\\\/g' | sed 's/"/\\"/g')
+          TEX_FILE_ESC=$(printf '%s' "$TEX_FILE" | sed 's/\\/\\\\/g' | sed 's/"/\\"/g')
+          REPO_ESC=$(printf '%s' "$GITHUB_REPOSITORY" | sed 's/\\/\\\\/g' | sed 's/"/\\"/g')
+          COMMIT_ESC=$(printf '%s' "$COMMIT_SHA" | sed 's/\\/\\\\/g' | sed 's/"/\\"/g')
+          
+          # Build JSON payload using printf to avoid heredoc issues
+          WEBHOOK_PAYLOAD=$(printf '{"status":"success","pdf_url":"%s","pdf_file":"%s","tex_file":"%s","repository":"%s","branch":"generated","commit":"%s"}' \
+            "$PDF_URL_ESC" "$PDF_FILE_ESC" "$TEX_FILE_ESC" "$REPO_ESC" "$COMMIT_ESC")
+          
+          if ! curl -X POST "$WEBHOOK_URL" \
+            -H "Content-Type: application/json" \
+            -d "$WEBHOOK_PAYLOAD" \
+            -f -s -w "\nHTTP Status: %{http_code}\n" -o /dev/null; then
+            echo "ERROR_MSG=Webhook call failed for $PDF_FILE" >> $GITHUB_ENV
+            echo "WEBHOOK_FAILED=true" >> $GITHUB_ENV
+            echo "Warning: Failed to send success webhook for $PDF_FILE"
+          fi
