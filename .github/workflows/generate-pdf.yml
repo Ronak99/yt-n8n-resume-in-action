@@ -176,7 +176,7 @@ jobs:
           TEX_FILE: ${{ env.TEX_FILE }}
           PDF_FILE: ${{ env.PDF_FILE }}
         run: |
-          WEBHOOK_URL="https://aeravath.app.n8n.cloud/webhook-test/789e96c4-9c2e-4f6c-9621-b016295c07ce"
+          WEBHOOK_URL="https://aeravath.app.n8n.cloud/webhook/789e96c4-9c2e-4f6c-9621-b016295c07ce"
           
           if [ -z "$PDF_FILE" ] || [ -z "$TEX_FILE" ]; then
             echo "ERROR: PDF_FILE or TEX_FILE not set"
