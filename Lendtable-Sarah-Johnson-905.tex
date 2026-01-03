@@ -1,0 +1,162 @@
+\documentclass[10pt, letterpaper]{article}
+
+% ---------- Fonts & layout ----------
+\usepackage[margin=1in]{geometry}
+\usepackage{fontspec}
+\usepackage{setspace}
+\usepackage{parskip}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{tabularx}
+\usepackage{hyperref}
+
+% Set SourceSans3 as the main font
+\setmainfont{SourceSans3}[
+  Path = ./sourceSans/,
+  Extension = .ttf,
+  UprightFont = *-Regular,
+  BoldFont = *-Bold,
+  ItalicFont = *-Italic,
+  BoldItalicFont = *-BoldItalic
+]
+
+% ---------- Colors ----------
+\definecolor{Primary}{RGB}{23,43,77}
+\definecolor{RuleGray}{gray}{0.25}
+\definecolor{lightblue}{RGB}{10, 132, 255}
+
+% ---------- PDF meta ----------
+\hypersetup {
+  pdftitle={Resume - Sarah Johnson},
+  pdfauthor={Sarah Johnson},
+  colorlinks=true,
+  linkcolor=lightblue,
+  urlcolor=lightblue,
+  citecolor=lightblue
+}
+
+% ---------- Section styling ----------
+\makeatletter
+\renewcommand{\section}{%
+  \@startsection{section}{1}{\z@}{10pt}{6pt}{%
+    \Large\bfseries\color{black}%
+  }%
+}
+\renewcommand{\@seccntformat}[1]{}
+\def\@sect#1#2#3#4#5#6[#7]#8{%
+  \ifnum #2>\c@secnumdepth
+    \let\@svsec\@empty
+  \else
+    \refstepcounter{#1}%
+    \let\@svsec\@empty
+  \fi
+  \begingroup
+    #6{%
+      \MakeUppercase{#8}\\[-4pt]%
+      \textcolor{RuleGray}{\rule{\linewidth}{0.5pt}}%
+    }%
+  \endgroup
+  \@xsect{#5}%
+}
+\makeatother
+
+% ---------- Lists ----------
+\setlength{\leftmargini}{0pt}
+\setlength{\itemindent}{0pt}
+\setlength{\itemsep}{3pt}
+\setlength{\topsep}{0pt}
+\setlength{\partopsep}{0pt}
+\setlength{\parsep}{0pt}
+
+% ---------- Small helpers ----------
+\newcommand{\bull}{\kern0.45em\textbullet\kern0.45em}
+\newcommand{\role}[1]{\textbf{#1}}
+\newcommand{\org}[1]{\textbf{#1}}
+\newcommand{\place}[1]{\textit{#1}}
+\newcommand{\blackLink}[2]{\href{#1}{\textcolor{black}{#2}}}
+\newcommand{\blueLink}[2]{\href{#1}{\textcolor{lightblue}{#2}}}
+\newcommand{\placeholder}[1]{\lbrack #1\rbrack}
+
+% ---------- Header ----------
+\makeatletter
+\renewcommand{\maketitle}{
+  \begin{center}
+    {\huge\bfseries Sarah Johnson}\par\vspace{6pt}
+    {\color{Primary}
+      Austin, Texas, USA \bull
+      \blackLink{mailto:sarah.johnson@email.com}{sarah.johnson@email.com} \bull
+      +1-555-987-6543 \bull
+      \blackLink{https://linkedin.com/in/sarahjohnson}{linkedin.com/in/sarahjohnson} \bull
+      \blackLink{https://github.com/sarahjohnson}{github.com/sarahjohnson}
+    }
+  \end{center}
+  \vspace{-8pt}
+}
+\makeatother
+
+% ---------- Page Style ----------
+\pagestyle{empty}
+
+\begin{document}
+
+\maketitle
+\vspace{15pt}
+
+% ---------- SUMMARY ----------
+\section{Summary}
+Experienced engineering leader and founding team builder with 6+ years driving the design, development, and launch of scalable software and AI-powered products. Proven expertise at the intersection of backend engineering, payments, and infrastructure, with hands-on delivery of developer tools and complex system integrations in high-growth environments. Collaborative partner to product and business teams with a passion for shaping technology, culture, and early-stage outcomes.
+
+% ---------- EXPERIENCE ----------
+\section{Experience}
+\role{Senior Product Manager, Azure DevOps (AI and Infrastructure)} \hfill 03/2021 -- Present \\
+\org{Microsoft} \bull \href{https://microsoft.com}{microsoft.com} \hfill \place{Redmond, WA}
+\begin{itemize}
+  \item Drove technical strategy and full-stack roadmap for Azure DevOps, directly integrating leading \textbf{AI models} and \textbf{developer tool} APIs for enterprise clients.
+  \item Architected and shipped scalable backend solutions supporting \textbf{hundreds of thousands} of CI/CD pipelines, focusing on high-throughput and secure data handling for payments and automation workflows.
+  \item Collaborated with founders and senior leadership to define platform architecture and set technical direction aligned to fast-evolving market needs.
+  \item Acted as a forward-deployed technical partner, translating engineering capability to customers during \textbf{sales cycles}, accelerating onboarding of Fortune 500 enterprises.
+  \item Spearheaded integration with payment processors and cloud infrastructure providers, improving feature reliability and reducing transaction latency by \textbf{30\%}.
+  \item Led a cross-functional team of 12 (engineers/designers), cultivating agile culture and best practices for a rapidly scaling organization.
+\end{itemize}
+\vspace{12pt}
+
+\role{Product Manager, Seller Infrastructure \& Payments} \hfill 06/2018 -- 02/2021 \\
+\org{Amazon} \bull \href{https://amazon.com}{amazon.com} \hfill \place{Seattle, WA}
+\begin{itemize}
+  \item Owned the end-to-end delivery of platform tools and \textbf{payments infrastructure} supporting 100K+ marketplace merchants.
+  \item Partnered with engineering to design and launch secure API integrations with leading payment gateways and AI-driven merchant analytics.
+  \item Reduced payment processing time by \textbf{25\%} and improved transactional scalability through backend system enhancements and distributed architecture.
+  \item Collaborated with product and technical teams across three continents to deliver real-time financial reporting and developer-facing documentation.
+  \item Enhanced data-driven decision making by championing advanced experimentation (A/B tests) and analytics pipelines, leading to increased seller satisfaction and engagement.
+  \item Presented technical and product strategy to VP- and C-level stakeholders, influencing roadmap for next-generation commerce infrastructure.
+\end{itemize}
+\vspace{12pt}
+
+% ---------- DYNAMIC SECTION 1 ----------
+\section{Key Projects}
+\org{AI-Powered Product Prioritization Tool} \bull Internal SaaS Platform
+\begin{itemize}
+  \item Designed and built an internal tool leveraging \textbf{AI-driven scoring algorithms} for feature prioritization, adopted by 50+ PMs; improved product velocity and alignment with business outcomes.
+\end{itemize}
+
+\org{Open Source Product Management Framework} \bull Public \bull \href{https://github.com/sarahjohnson/pm-framework}{github.com/sarahjohnson/pm-framework}
+\begin{itemize}
+  \item Created and maintained an open-source framework for product teams focused on agile delivery, developer experience, and system integrations; \textbf{1,000+ GitHub stars} and active community adoption.
+\end{itemize}
+
+% ---------- DYNAMIC SECTION 2 ----------
+\section{Technical Skills}
+\textbf{Programming:} Python, SQL, REST APIs, Shell \\
+\textbf{AI Tools:} OpenAI API, Azure AI, Data Analysis, Experimentation \\
+\textbf{Infrastructure:} AWS, Azure Cloud, Payments Integrations, Distributed Systems, Developer Tooling \\
+\textbf{Product/Agile:} Mixpanel, Amplitude, Google Analytics, Figma, Jira, Agile/Scrum \\
+
+% ---------- EDUCATION ----------
+\section{Education}
+\textbf{MBA in Technology Management} \bull Stanford Graduate School of Business \bull Stanford, CA \bull 2018 \bull GPA: 3.9/4.0\\
+Dean's List, Product Management Fellowship
+
+\vspace{6pt}
+
+\textbf{B.S. in Computer Science} \bull University of Texas at Austin \bull Austin, TX \bull 2016 \bull GPA: 3.7/4.0
+
+\end{document}
